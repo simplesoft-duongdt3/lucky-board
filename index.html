@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="vi" data-theme="minimal" data-density="comfortable" data-radius="balanced" data-font="modern" data-motion="expressive" data-columns="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Bốc ngẫu nhiên nhiều kết quả từ danh sách dán vào. Mọi dữ liệu và cấu hình được lưu trong trình duyệt."
+    />
+    <meta name="theme-color" content="#f4f7f8" />
+    <title>Bốc số — Rút ngẫu nhiên trên máy của bạn</title>
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Lora:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <button class="brand" type="button" data-go-view="draw" aria-label="Mở trang bốc kết quả">
+          <svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true">
+            <rect x="3" y="3" width="9" height="9" rx="2" fill="currentColor" />
+            <rect x="16" y="3" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <rect x="3" y="16" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <rect x="16" y="16" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+          <span data-text-key="appName">Bốc số</span>
+        </button>
+
+        <nav class="side-nav" aria-label="Điều hướng chính">
+          <button class="nav-button is-active" type="button" data-go-view="draw" aria-current="page">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <rect x="3" y="3" width="5" height="5" rx="1" />
+              <rect x="12" y="3" width="5" height="5" rx="1" />
+              <rect x="3" y="12" width="5" height="5" rx="1" />
+              <rect x="12" y="12" width="5" height="5" rx="1" />
+            </svg>
+            <span data-text-key="navDraw">Bốc số</span>
+          </button>
+          <button class="nav-button" type="button" data-go-view="lists">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 5.5h12M4 10h12M4 14.5h12" />
+              <circle cx="2.25" cy="5.5" r=".75" fill="currentColor" stroke="none" />
+              <circle cx="2.25" cy="10" r=".75" fill="currentColor" stroke="none" />
+              <circle cx="2.25" cy="14.5" r=".75" fill="currentColor" stroke="none" />
+            </svg>
+            <span data-text-key="navLists">Danh sách</span>
+            <span class="nav-count" id="listsNavCount" hidden></span>
+          </button>
+          <button class="nav-button" type="button" data-go-view="appearance">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 5h12M4 10h12M4 15h12" />
+              <circle cx="7" cy="5" r="1.75" />
+              <circle cx="13" cy="10" r="1.75" />
+              <circle cx="8" cy="15" r="1.75" />
+            </svg>
+            <span data-text-key="navAppearance">Giao diện</span>
+          </button>
+          <button class="nav-button" type="button" data-go-view="history" id="historyNavButton">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="10" r="7" />
+              <path d="M10 5.75V10l2.75 1.75" />
+            </svg>
+            <span data-text-key="navHistory">Lịch sử</span>
+            <span class="nav-count" id="historyNavCount" hidden></span>
+          </button>
+        </nav>
+
+        <div class="sidebar-note" id="sidebarNote">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M10 2.75c2.2 0 4 1.8 4 4v2.1h.75c.69 0 1.25.56 1.25 1.25v5.15c0 .69-.56 1.25-1.25 1.25H5.25C4.56 16.5 4 15.94 4 15.25V10.1c0-.69.56-1.25 1.25-1.25h.75v-2.1c0-2.2 1.8-4 4-4Z" />
+            <path d="M10 11.25v2.5" />
+          </svg>
+          <p data-text-key="localNote">Dữ liệu nằm trên thiết bị này. Không có máy chủ.</p>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="scope">
+            <label for="listSwitcher" data-text-key="currentListLabel">Danh sách hiện tại</label>
+            <select id="listSwitcher" aria-label="Chọn danh sách đang làm việc"></select>
+          </div>
+          <div class="save-state" id="saveState">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="saveStatus">Chưa có dữ liệu lưu</span>
+          </div>
+        </header>
+
+        <main class="sheet">
+          <div class="sheet-content">
+            <header class="page-head">
+              <div class="page-heading">
+                <h1 id="pageTitle">Bốc số ngẫu nhiên</h1>
+                <p id="pageMeta">Chưa có danh sách. Dán nội dung để bắt đầu.</p>
+              </div>
+
+              <div class="page-actions" id="drawActions">
+                <div class="count-control">
+                  <label for="drawCount" id="countLabel">Số ô</label>
+                  <div class="stepper">
+                    <button type="button" id="decreaseCount" aria-label="Giảm số ô kết quả">
+                      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10" /></svg>
+                    </button>
+                    <input
+                      id="drawCount"
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="1"
+                      value="20"
+                      inputmode="numeric"
+                      aria-label="Số ô kết quả"
+                    />
+                    <button type="button" id="increaseCount" aria-label="Tăng số ô kết quả">
+                      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="policy-control">
+                  <label for="drawPolicy" id="policyLabel">Sau khi rút</label>
+                  <select id="drawPolicy" aria-describedby="drawPolicyHelp">
+                    <option value="keep">Vẫn giữ</option>
+                    <option value="remove">Rút xong thì bỏ</option>
+                  </select>
+                </div>
+                <button class="button button-secondary" id="openDataButton" type="button">Dữ liệu nguồn</button>
+                <button class="button button-primary" id="drawButton" type="button">Dán danh sách</button>
+              </div>
+
+              <div class="page-actions" id="listsActions" hidden>
+                <button class="button button-primary" id="createListButton" type="button">Tạo danh sách</button>
+              </div>
+
+              <div class="page-actions" id="appearanceActions" hidden>
+                <button
+                  class="button button-secondary"
+                  id="resetAppearanceButton"
+                  type="button"
+                  data-text-key="resetAppearanceAction"
+                >
+                  Đặt lại giao diện
+                </button>
+              </div>
+
+              <div class="page-actions" id="historyActions" hidden>
+                <button class="button button-secondary button-danger" id="clearHistoryButton" type="button">
+                  Xóa lịch sử
+                </button>
+              </div>
+            </header>
+
+            <section id="drawView" aria-labelledby="pageTitle">
+              <div class="draw-layout">
+                <section class="panel results-panel" aria-labelledby="resultsHeading">
+                  <header class="panel-head results-head">
+                    <div>
+                      <h2 id="resultsHeading" data-text-key="resultTitle">Bảng kết quả</h2>
+                      <p id="drawStamp">Chưa có lượt rút</p>
+                    </div>
+                    <div class="results-head-actions">
+                      <button
+                        class="button button-quiet"
+                        id="focusModeButton"
+                        type="button"
+                        aria-pressed="false"
+                        data-text-key="focusEnterAction"
+                      >
+                        Trình chiếu
+                      </button>
+                      <button class="button button-quiet" id="copyButton" type="button" disabled>
+                        <svg viewBox="0 0 18 18" aria-hidden="true">
+                          <rect x="6" y="5.5" width="8" height="9" rx="1.5" />
+                          <path d="M4 12.5H3.5A1.5 1.5 0 0 1 2 11V3.5A1.5 1.5 0 0 1 3.5 2H11a1.5 1.5 0 0 1 1.5 1.5V4" />
+                        </svg>
+                        <span data-text-key="copyAction">Sao chép</span>
+                      </button>
+                    </div>
+                  </header>
+
+                  <div class="run-settings" aria-labelledby="runModeLabel">
+                    <label class="run-setting" for="runMode">
+                      <span id="runModeLabel" data-text-key="runModeLabel">Kiểu chạy random</span>
+                      <select id="runMode">
+                        <option value="instant" data-text-key="runModeInstantOption">Tức thì</option>
+                        <option value="together" data-text-key="runModeTogetherOption">Đồng loạt</option>
+                        <option value="cascade" data-text-key="runModeCascadeOption">Cuốn chiếu</option>
+                      </select>
+                    </label>
+                    <label class="run-setting run-duration-setting" for="runDuration">
+                      <span data-text-key="runDurationLabel">Thời gian</span>
+                      <span class="duration-control">
+                        <input
+                          id="runDuration"
+                          type="number"
+                          min="0.5"
+                          max="20"
+                          step="0.5"
+                          inputmode="decimal"
+                          value="3"
+                        />
+                        <span data-text-key="runDurationUnit">giây</span>
+                      </span>
+                    </label>
+                    <p class="run-mode-help" id="runModeHelp" data-text-key="runModeTogetherHelp">
+                      Các ô đổi ngẫu nhiên rồi dừng cùng lúc.
+                    </p>
+                  </div>
+
+                  <div
+                    id="resultGrid"
+                    class="result-grid"
+                    role="list"
+                    tabindex="-1"
+                    aria-label="Các kết quả đã bốc"
+                  ></div>
+
+                  <footer class="panel-foot results-foot">
+                    <p id="drawModeNote">Không lặp trong cùng một lượt.</p>
+                    <p class="focus-help" id="focusHelp" data-text-key="focusHelp">
+                      Space để bốc tiếp · Esc để thoát
+                    </p>
+                    <div class="results-foot-actions">
+                      <button
+                        class="button button-primary focus-only"
+                        id="focusDrawButton"
+                        type="button"
+                        data-text-key="focusDrawAction"
+                      >
+                        Bốc lượt tiếp
+                      </button>
+                      <button class="text-button" id="exportButton" type="button" disabled>
+                        <span data-text-key="exportAction">Tải CSV</span>
+                      </button>
+                    </div>
+                  </footer>
+                </section>
+
+                <aside class="panel source-panel" id="sourcePanel" aria-labelledby="sourceHeading">
+                  <header class="panel-head">
+                    <h2 id="sourceHeading" data-text-key="sourceTitle">Dữ liệu nguồn</h2>
+                    <button class="text-button" id="editDataButton" type="button">
+                      <span data-text-key="editAction">Chỉnh sửa</span>
+                    </button>
+                  </header>
+
+                  <div class="source-summary">
+                    <div class="source-total">
+                      <strong id="sourceCount">0</strong>
+                      <span data-text-key="sourceUnit">mục</span>
+                    </div>
+                    <p id="sourceState">Chưa có dữ liệu.</p>
+
+                    <div class="pool-policy">
+                      <div class="pool-status-row">
+                        <span id="poolStatus" aria-live="polite">0 mục khả dụng</span>
+                        <button class="text-button" id="restorePoolButton" type="button" hidden>
+                          Khôi phục tất cả
+                        </button>
+                      </div>
+                      <p class="policy-help" id="drawPolicyHelp">Mục đã trúng tiếp tục xuất hiện ở các lượt sau.</p>
+                    </div>
+                  </div>
+
+                  <div id="sourcePreview" class="source-preview" aria-label="Xem trước dữ liệu nguồn"></div>
+
+                  <div class="source-guidance">
+                    <p data-text-key="sourceInstructions">Mỗi dòng là một mục. Dán trực tiếp từ Excel cũng được hỗ trợ.</p>
+                    <button class="text-button" id="sourceOpenButton" type="button">Dán danh sách</button>
+                  </div>
+
+                  <div class="source-local" id="sourceLocal">
+                    <div>
+                      <strong data-text-key="localTitle">Lưu cục bộ</strong>
+                      <span id="sourceSavedAt">Chưa có dữ liệu</span>
+                    </div>
+                    <button class="text-button text-danger" id="clearListButton" type="button" hidden>
+                      Xóa danh sách này
+                    </button>
+                  </div>
+                </aside>
+              </div>
+              <p class="screen-announcer" id="screenAnnouncer" aria-live="polite"></p>
+            </section>
+
+            <section id="listsView" aria-labelledby="pageTitle" hidden>
+              <div class="list-summary">
+                <p id="listsIntro">Mỗi danh sách giữ riêng dữ liệu, pool và giao diện.</p>
+                <span id="listsCountLabel">1 danh sách</span>
+              </div>
+              <div id="listTable" class="list-table"></div>
+              <section class="transfer-panel" aria-labelledby="transferHeading">
+                <div>
+                  <h2 id="transferHeading" data-text-key="transferTitle">Sao lưu trên máy</h2>
+                  <p data-text-key="transferDescription">
+                    Tải một tệp JSON chứa toàn bộ danh sách, pool, lịch sử và cấu hình để cất giữ
+                    hoặc chuyển sang trình duyệt khác.
+                  </p>
+                </div>
+                <div class="transfer-actions">
+                  <button class="button button-secondary" id="exportBackupButton" type="button" data-text-key="exportBackupAction">
+                    Tải bản sao lưu
+                  </button>
+                  <button class="button button-secondary" id="importBackupButton" type="button" data-text-key="importBackupAction">
+                    Nhập bản sao lưu
+                  </button>
+                  <input id="importBackupInput" type="file" accept="application/json,.json" hidden />
+                </div>
+              </section>
+              <section class="list-guide" aria-labelledby="listGuideHeading">
+                <div class="list-guide-copy">
+                  <h2 id="listGuideHeading" data-text-key="listGuideTitle">Mỗi danh sách là một không gian riêng</h2>
+                  <p data-text-key="listGuideDescription">
+                    Đổi danh sách sẽ đổi cả dữ liệu nguồn, pool, lịch sử và giao diện. Bản sao lưu
+                    gộp toàn bộ các danh sách vào một tệp.
+                  </p>
+                </div>
+                <div class="list-guide-facts" aria-label="Tổng quan dữ liệu cục bộ">
+                  <div>
+                    <span data-text-key="listGuideEntriesLabel">Dữ liệu đang lưu</span>
+                    <strong id="listsTotalEntries">0 mục</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="listGuideHistoryLabel">Lịch sử đã giữ</span>
+                    <strong id="listsTotalHistory">0 lượt</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="listGuideScopeLabel">Phạm vi</span>
+                    <strong data-text-key="listGuideScopeValue">Trình duyệt này</strong>
+                  </div>
+                </div>
+              </section>
+              <section class="active-list-summary" aria-labelledby="activeListHeading">
+                <header>
+                  <div>
+                    <h2 id="activeListHeading" data-text-key="activeListTitle">Danh sách đang mở</h2>
+                    <p id="listsActiveName">Danh sách của tôi</p>
+                  </div>
+                  <button
+                    class="button button-secondary"
+                    id="listsOpenDrawButton"
+                    type="button"
+                    data-text-key="activeListOpenAction"
+                  >
+                    Mở trang bốc số
+                  </button>
+                </header>
+                <div class="active-list-facts">
+                  <div>
+                    <span data-text-key="activeListEntriesLabel">Dữ liệu nguồn</span>
+                    <strong id="listsActiveEntries">0 mục</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="activeListAvailableLabel">Đang khả dụng</span>
+                    <strong id="listsActiveAvailable">0 mục</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="activeListDrawCountLabel">Mỗi lượt</span>
+                    <strong id="listsActiveDrawCount">20 ô</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="activeListHistoryLabel">Lịch sử</span>
+                    <strong id="listsActiveHistory">0 lượt</strong>
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <section id="appearanceView" aria-labelledby="pageTitle" hidden>
+              <div class="appearance-layout">
+                <section class="settings-section" aria-labelledby="themeHeading">
+                  <header class="section-heading">
+                    <div>
+                      <h2 id="themeHeading" data-text-key="themeSectionTitle">Bộ giao diện</h2>
+                      <p data-text-key="themeSectionDescription">
+                        Chọn không khí phù hợp; mọi thay đổi chỉ áp dụng cho danh sách hiện tại.
+                      </p>
+                    </div>
+                    <div class="mini-preview" aria-label="Xem trước giao diện">
+                      <span class="preview-cell">
+                        <small>01</small><strong data-text-key="previewExampleOne">Kết quả mẫu</strong>
+                      </span>
+                      <span class="preview-cell">
+                        <small>02</small><strong data-text-key="previewExampleTwo">Giữ đúng nhịp</strong>
+                      </span>
+                    </div>
+                  </header>
+                  <div id="themeGrid" class="theme-grid" role="radiogroup" aria-label="Chọn bộ giao diện"></div>
+                </section>
+
+                <section class="settings-section" aria-labelledby="colorHeading">
+                  <header class="section-heading">
+                    <div>
+                      <h2 id="colorHeading" data-text-key="colorSectionTitle">Màu sắc</h2>
+                      <p data-text-key="colorSectionDescription">
+                        Dùng bảng màu của theme hoặc đặt màu riêng. Nền và chữ cần đạt tương phản 4,5:1.
+                      </p>
+                    </div>
+                    <label class="switch-row switch-inline" for="customColorsToggle">
+                      <span data-text-key="customColorsLabel">Màu tùy chỉnh</span>
+                      <input id="customColorsToggle" type="checkbox" data-config-toggle="customColors.enabled" />
+                    </label>
+                  </header>
+                  <div class="color-grid" id="customColorGrid">
+                    <label class="field">
+                      <span data-text-key="colorGroundLabel">Nền trang</span>
+                      <span class="color-control">
+                        <input type="color" data-color-key="ground" />
+                        <output data-color-output="ground">#f4f7f8</output>
+                      </span>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="colorSurfaceLabel">Bề mặt</span>
+                      <span class="color-control">
+                        <input type="color" data-color-key="surface" />
+                        <output data-color-output="surface">#ffffff</output>
+                      </span>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="colorTextLabel">Chữ chính</span>
+                      <span class="color-control">
+                        <input type="color" data-color-key="text" />
+                        <output data-color-output="text">#151719</output>
+                      </span>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="colorAccentLabel">Màu nhấn</span>
+                      <span class="color-control">
+                        <input type="color" data-color-key="accent" />
+                        <output data-color-output="accent">#1b6c80</output>
+                      </span>
+                    </label>
+                  </div>
+                  <p id="contrastStatus" class="setting-note" aria-live="polite"></p>
+                </section>
+
+                <section class="settings-section" aria-labelledby="layoutHeading">
+                  <header class="section-heading">
+                    <div>
+                      <h2 id="layoutHeading" data-text-key="layoutSectionTitle">Bố cục</h2>
+                      <p data-text-key="layoutSectionDescription">
+                        Điều chỉnh cách bảng kết quả và các khối thông tin được trình bày.
+                      </p>
+                    </div>
+                  </header>
+                  <div class="settings-grid">
+                    <label class="field">
+                      <span data-text-key="resultColumnsLabel">Số cột kết quả</span>
+                      <select data-config-select="resultColumns">
+                        <option value="auto" data-text-key="columnsAutoOption">Tự động</option>
+                        <option value="2" data-text-key="columns2Option">2 cột</option>
+                        <option value="3" data-text-key="columns3Option">3 cột</option>
+                        <option value="4" data-text-key="columns4Option">4 cột</option>
+                        <option value="5" data-text-key="columns5Option">5 cột</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="densityLabel">Mật độ</span>
+                      <select data-config-select="density">
+                        <option value="comfortable" data-text-key="densityComfortableOption">Thoáng</option>
+                        <option value="compact" data-text-key="densityCompactOption">Gọn</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="radiusLabel">Bo góc</span>
+                      <select data-config-select="radius">
+                        <option value="tight" data-text-key="radiusTightOption">Vuông vức</option>
+                        <option value="balanced" data-text-key="radiusBalancedOption">Cân bằng</option>
+                        <option value="soft" data-text-key="radiusSoftOption">Mềm</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="fontLabel">Kiểu chữ</span>
+                      <select data-config-select="fontPreset">
+                        <option value="modern" data-text-key="fontModernOption">Hiện đại</option>
+                        <option value="editorial" data-text-key="fontEditorialOption">Trang trọng</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span data-text-key="motionLabel">Chuyển động</span>
+                      <select data-config-select="motion">
+                        <option value="expressive" data-text-key="motionExpressiveOption">Có hiệu ứng</option>
+                        <option value="still" data-text-key="motionStillOption">Tĩnh</option>
+                      </select>
+                    </label>
+                  </div>
+                </section>
+
+                <section class="settings-section" aria-labelledby="visibilityHeading">
+                  <header class="section-heading">
+                    <div>
+                      <h2 id="visibilityHeading" data-text-key="visibilitySectionTitle">Thành phần hiển thị</h2>
+                      <p data-text-key="visibilitySectionDescription">
+                        Ẩn bớt phần phụ khi bạn chỉ cần một bảng kết quả gọn gàng.
+                      </p>
+                    </div>
+                  </header>
+                  <div class="visibility-grid">
+                    <label class="switch-row" for="showSource">
+                      <span>
+                        <strong data-text-key="visibilitySourceLabel">Bảng dữ liệu nguồn</strong>
+                        <small data-text-key="visibilitySourceDescription">Hiện cột tóm tắt và xem trước dữ liệu.</small>
+                      </span>
+                      <input id="showSource" type="checkbox" data-config-toggle="visibility.showSource" />
+                    </label>
+                    <label class="switch-row" for="showSourcePreview">
+                      <span>
+                        <strong data-text-key="visibilityPreviewLabel">Danh sách xem trước</strong>
+                        <small data-text-key="visibilityPreviewDescription">Hiện 5 mục khả dụng đầu tiên.</small>
+                      </span>
+                      <input id="showSourcePreview" type="checkbox" data-config-toggle="visibility.showSourcePreview" />
+                    </label>
+                    <label class="switch-row" for="showSaveStatus">
+                      <span>
+                        <strong data-text-key="visibilitySaveLabel">Trạng thái lưu</strong>
+                        <small data-text-key="visibilitySaveDescription">Hiện thời điểm dữ liệu được lưu trên máy.</small>
+                      </span>
+                      <input id="showSaveStatus" type="checkbox" data-config-toggle="visibility.showSaveStatus" />
+                    </label>
+                    <label class="switch-row" for="showSidebarNote">
+                      <span>
+                        <strong data-text-key="visibilityNoteLabel">Ghi chú riêng tư</strong>
+                        <small data-text-key="visibilityNoteDescription">Hiện lời nhắc dữ liệu không rời trình duyệt.</small>
+                      </span>
+                      <input id="showSidebarNote" type="checkbox" data-config-toggle="visibility.showSidebarNote" />
+                    </label>
+                    <label class="switch-row" for="showHistoryNav">
+                      <span>
+                        <strong data-text-key="visibilityHistoryLabel">Mục lịch sử trên thanh bên</strong>
+                        <small data-text-key="visibilityHistoryDescription">Vẫn có thể mở lịch sử bằng liên kết trực tiếp.</small>
+                      </span>
+                      <input id="showHistoryNav" type="checkbox" data-config-toggle="visibility.showHistoryNav" />
+                    </label>
+                  </div>
+                </section>
+
+                <section class="settings-section" aria-labelledby="textHeading">
+                  <header class="section-heading">
+                    <div>
+                      <h2 id="textHeading" data-text-key="textSectionTitle">Nội dung giao diện</h2>
+                      <p data-text-key="textSectionDescription">
+                        Thay lời hiển thị cho từng danh sách. Dùng {{count}}, {{drawCount}},
+                        {{remaining}}, {{time}} trong câu động.
+                      </p>
+                    </div>
+                    <button
+                      class="button button-secondary"
+                      id="resetTextButton"
+                      type="button"
+                      data-text-key="resetTextAction"
+                    >
+                      Đặt lại nội dung
+                    </button>
+                  </header>
+                  <div id="textSettings" class="text-settings"></div>
+                </section>
+              </div>
+            </section>
+
+            <section id="historyView" aria-labelledby="pageTitle" hidden>
+              <div class="history-toolbar">
+                <p id="historyIntro">Các lượt rút được giữ trên trình duyệt này.</p>
+                <span id="historyCountLabel">0 lượt</span>
+              </div>
+              <section class="history-context" aria-labelledby="historyContextHeading">
+                <h2 id="historyContextHeading" data-text-key="historyContextTitle">Trạng thái danh sách hiện tại</h2>
+                <div class="history-facts">
+                  <div>
+                    <span data-text-key="historyPoolLabel">Mục khả dụng</span>
+                    <strong id="historyPoolFact">0 / 0</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="historyPolicyLabel">Chế độ sau khi rút</span>
+                    <strong id="historyPolicyFact">Vẫn giữ</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="historyDrawCountLabel">Số ô mỗi lượt</span>
+                    <strong id="historyDrawCountFact">20</strong>
+                  </div>
+                </div>
+              </section>
+              <div id="historyList" class="history-list"></div>
+              <div id="historyEmpty" class="history-empty" hidden>
+                <div class="history-empty-primary">
+                  <h2 data-text-key="historyEmptyTitle">Lượt rút đầu tiên đang chờ</h2>
+                  <p data-text-key="historyEmpty">Chưa có lượt rút nào được lưu.</p>
+                  <button
+                    class="button button-primary"
+                    id="historyDrawButton"
+                    type="button"
+                    data-text-key="historyOpenDraw"
+                  >
+                    Mở trang bốc số
+                  </button>
+                </div>
+                <div class="history-empty-guide">
+                  <h3 data-text-key="historyEmptyGuideTitle">Mỗi lượt đã lưu gồm</h3>
+                  <dl>
+                    <div>
+                      <dt data-text-key="historyEmptyTimeLabel">Thời điểm</dt>
+                      <dd data-text-key="historyEmptyTimeDescription">Ngày, giờ và số thứ tự lượt.</dd>
+                    </div>
+                    <div>
+                      <dt data-text-key="historyEmptySourceLabel">Dữ liệu nguồn</dt>
+                      <dd data-text-key="historyEmptySourceDescription">Số mục tại thời điểm bốc.</dd>
+                    </div>
+                    <div>
+                      <dt data-text-key="historyEmptyResultsLabel">Kết quả</dt>
+                      <dd data-text-key="historyEmptyResultsDescription">Đủ các ô của lượt để sao chép lại.</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+              <section class="history-retention" aria-labelledby="historyRetentionHeading">
+                <div>
+                  <h2 id="historyRetentionHeading" data-text-key="historyRetentionTitle">
+                    Dữ liệu được giữ thế nào
+                  </h2>
+                  <p data-text-key="historyRetentionDescription">
+                    Lịch sử chỉ đọc lại kết quả cũ. Việc xem hoặc sao chép không làm thay đổi pool hiện
+                    tại và không tạo thêm lượt mới.
+                  </p>
+                </div>
+                <div class="history-retention-facts">
+                  <div>
+                    <span data-text-key="historyRetentionLimitLabel">Giới hạn trên máy</span>
+                    <strong data-text-key="historyRetentionLimitValue">50 lượt gần nhất</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="historyRetentionPoolLabel">Pool hiện tại</span>
+                    <strong data-text-key="historyRetentionPoolValue">Độc lập với lịch sử</strong>
+                  </div>
+                  <div>
+                    <span data-text-key="historyRetentionBackupLabel">Sao lưu</span>
+                    <strong data-text-key="historyRetentionBackupValue">Kèm trong tệp JSON</strong>
+                  </div>
+                </div>
+              </section>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="data-dialog" id="dataDialog" aria-labelledby="dataDialogTitle">
+      <form id="dataForm">
+        <header class="dialog-head">
+          <div>
+            <h2 id="dataDialogTitle" data-text-key="dataTitle">Dữ liệu nguồn</h2>
+            <p id="dataDescription" data-text-key="dataDescription">
+              Dán danh sách, chọn cách tách và kiểm tra số mục trước khi áp dụng.
+            </p>
+          </div>
+          <button class="icon-button" id="closeDataButton" type="button" aria-label="Đóng">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m4 4 10 10M14 4 4 14" /></svg>
+          </button>
+        </header>
+
+        <div class="dialog-body">
+          <div class="data-editor">
+            <div class="field-label-row">
+              <label for="dataInput" data-text-key="dataInputLabel">Danh sách</label>
+              <div class="inline-actions">
+                <button
+                  class="text-button"
+                  id="loadSampleButton"
+                  type="button"
+                  data-text-key="loadSampleAction"
+                >
+                  Dùng 200 món mẫu
+                </button>
+                <button class="text-button" id="pasteButton" type="button" data-text-key="pasteAction">
+                  Dán từ bộ nhớ tạm
+                </button>
+              </div>
+            </div>
+            <textarea
+              id="dataInput"
+              maxlength="2000000"
+              spellcheck="false"
+              placeholder="Nguyễn Minh Anh&#10;Trần Quốc Bảo&#10;Lê Thu Hà&#10;Phạm Đức Long"
+            ></textarea>
+            <p class="field-help" id="dataInputHelp" data-text-key="dataInputHelp">
+              Dòng trống được bỏ qua. Mỗi dòng được tính là một mục, kể cả khi nội dung trùng nhau.
+            </p>
+          </div>
+
+          <aside class="data-options" aria-label="Tùy chọn nhận dữ liệu">
+            <div class="field-group">
+              <label for="delimiterMode" data-text-key="delimiterLabel">Cách tách</label>
+              <select id="delimiterMode">
+                <option value="auto" data-text-key="delimiterAutoOption">Tự động</option>
+                <option value="newline" data-text-key="delimiterNewlineOption">Mỗi dòng</option>
+                <option value="comma" data-text-key="delimiterCommaOption">Dấu phẩy</option>
+                <option value="tab" data-text-key="delimiterTabOption">Dấu tab</option>
+              </select>
+            </div>
+
+            <label class="check-row" for="dedupeInput">
+              <input id="dedupeInput" type="checkbox" />
+              <span>
+                <strong data-text-key="dedupeLabel">Bỏ nội dung trùng</strong>
+                <small data-text-key="dedupeDescription">Giữ lại mục xuất hiện đầu tiên.</small>
+              </span>
+            </label>
+
+            <div class="parse-card">
+              <span class="parse-label" data-text-key="parseLabel">Nhận diện</span>
+              <strong id="parsedCount">0 mục</strong>
+              <p id="parseDetail" data-text-key="parseEmpty">Chưa có nội dung để nhận diện.</p>
+            </div>
+
+            <div class="preview-head">
+              <span data-text-key="previewLabel">Xem trước</span>
+              <span id="previewLimit">8 mục đầu</span>
+            </div>
+            <ol id="dataPreview" class="data-preview"></ol>
+            <p class="dialog-note" id="dataResetNote" hidden>
+              Áp dụng danh sách mới sẽ làm mới bảng kết quả hiện tại. Lịch sử vẫn được giữ.
+            </p>
+          </aside>
+        </div>
+
+        <footer class="dialog-foot">
+          <p data-text-key="dataLocalNote">Nội dung chỉ được lưu trong trình duyệt này.</p>
+          <div class="dialog-actions">
+            <button
+              class="button button-secondary"
+              id="cancelDataButton"
+              type="button"
+              data-text-key="cancelAction"
+            >
+              Hủy
+            </button>
+            <button class="button button-primary" id="applyDataButton" type="submit">Áp dụng</button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="name-dialog" id="listDialog" aria-labelledby="listDialogTitle">
+      <form id="listForm">
+        <header class="dialog-head">
+          <div>
+            <h2 id="listDialogTitle" data-text-key="createListTitle">Tạo danh sách</h2>
+            <p data-text-key="listDialogDescription">Tên này chỉ hiển thị trên trình duyệt của bạn.</p>
+          </div>
+          <button class="icon-button" id="closeListDialogButton" type="button" aria-label="Đóng">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m4 4 10 10M14 4 4 14" /></svg>
+          </button>
+        </header>
+        <div class="dialog-body compact-dialog-body">
+          <label class="field" for="listNameInput">
+            <span data-text-key="listNameLabel">Tên danh sách</span>
+            <input id="listNameInput" type="text" maxlength="80" autocomplete="off" required />
+          </label>
+        </div>
+        <footer class="dialog-foot">
+          <p data-text-key="listDialogNote">Dữ liệu, pool và cấu hình được giữ riêng theo từng danh sách.</p>
+          <div class="dialog-actions">
+            <button
+              class="button button-secondary"
+              id="cancelListDialogButton"
+              type="button"
+              data-text-key="cancelAction"
+            >
+              Hủy
+            </button>
+            <button
+              class="button button-primary"
+              id="saveListButton"
+              type="submit"
+              data-text-key="saveListAction"
+            >
+              Lưu
+            </button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
+      <div class="confirm-content">
+        <h2 id="confirmTitle">Xóa dữ liệu?</h2>
+        <p id="confirmText"></p>
+        <div class="confirm-actions">
+          <button
+            class="button button-secondary"
+            id="confirmCancelButton"
+            type="button"
+            data-text-key="confirmKeepAction"
+          >
+            Giữ lại
+          </button>
+          <button
+            class="button button-danger-fill"
+            id="confirmActionButton"
+            type="button"
+            data-text-key="confirmDeleteAction"
+          >
+            Xóa
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript">Ứng dụng cần JavaScript để bốc ngẫu nhiên và lưu dữ liệu cục bộ.</div>
+    </noscript>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
